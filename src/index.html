@@ -1,0 +1,118 @@
+<!doctype html>
+<html class="no-js" ng-app="ngSff.test">
+  <head>
+    <meta charset="utf-8">
+    <title>ngsff</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+    <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+
+
+    <!-- build:css({.tmp,src}) styles/app.css -->
+    <!-- inject:css -->
+    <link rel="stylesheet" href="app/index.css">
+    <!-- endinject -->
+    <!-- endbuild -->
+
+    <!-- build:js scripts/modernizr.js -->
+    <script src="../bower_components/modernizr/modernizr.js"></script>
+    <!-- endbuild -->
+  </head>
+  <body>
+    <!--[if lt IE 10]>
+      <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+    <![endif]-->
+
+
+    <div>
+      <screen-flow>
+        <rest-data-source url="/employees.json" ref-id="employeeDs" load-on-start="true"></rest-data-source>
+        <screen state="ListOfItems" is-initial="true">
+          <div>
+            <ds ref-id="employeeDs">
+            </ds>
+            <h1>Welcome to First state</h1>
+            <button changes-state-to="CreateEmployee">Create new</button>
+            <div>
+              <div ng-repeat="employee in employeeDs.items">
+                <span ng-bind="employee.Id"></span> |
+                <span ng-bind="employee.FirstName"></span> |
+                <span ng-bind="employee.LastName"></span> |
+                <button changes-state-to="EmployeeEditor" change-state-value="{empId: employee.Id}">Edit</button>
+                <button deletes-item="{on: 'employeeDs', id: employee.Id}">Delete</button>
+              </div>
+            </div>
+          </div>
+        </screen>
+        <screen state="EmployeeEditor">
+          <div>
+            <ds ref-id="employeeDs" item="{Id: $parent.previous.empId}" save="true"></ds>
+            <h1>Welcome to EmployeeEditor</h1>
+            <span>Editing : {{$parent.previous.empId}}</span>
+            <form novalidate>
+              <label>Imię:</label>
+              <input type="text" ng-model="employeeDs.item.FirstName"/>
+              <label>Nazwisko:</label>
+              <input type="text" ng-model="employeeDs.item.LastName"/>
+              <button saves-item-on="employeeDs">Save</button>
+            </form>
+          </div>
+        </screen>
+        <screen state="CreateEmployee">
+          <div>
+            <ds ref-id="employeeDs" creates-new="{ FirstName: 'Imię', LastName: 'Nazwisko' }"></ds>
+            <h1>Creating Employee</h1>
+            <form novalidate="novalidate" name="createEmployee">
+              <label>Imię:</label>
+              <input type="text" ng-model="employeeDs.item.FirstName" name="firstName" required="required"/>
+              <validator-message form="createEmployee" field="firstName" error="required">Dupa dupa</validator-message>
+              <label>Nazwisko:</label>
+              <input type="text" ng-model="employeeDs.item.LastName" name="lastName"/>
+              <button creates-item-on="employeeDs" enabled-if-valid-form="createEmployee">Create</button>
+            </form>
+          </div>
+        </screen>
+      </screen-flow>
+    </div>
+
+
+
+    <!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
+    <script>
+      (function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=
+      function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;
+      e=o.createElement(i);r=o.getElementsByTagName(i)[0];
+      e.src='//www.google-analytics.com/analytics.js';
+      r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));
+      ga('create','UA-XXXXX-X');ga('send','pageview');
+    </script>
+
+    <!-- build:js scripts/vendor.js -->
+    <!-- bower:js -->
+    <script src="../bower_components/jquery/dist/jquery.js"></script>
+    <script src="../bower_components/angular/angular.js"></script>
+    <script src="../bower_components/angularjs/angular.js"></script>
+    <script src="../bower_components/angular-animate/angular-animate.js"></script>
+    <script src="../bower_components/angular-cookies/angular-cookies.js"></script>
+    <script src="../bower_components/angular-touch/angular-touch.js"></script>
+    <script src="../bower_components/angular-sanitize/angular-sanitize.js"></script>
+    <script src="../bower_components/underscore/underscore.js"></script>
+    <script src="../bower_components/angular-event-dispatcher/dist/js/angular-event-distpacher.min.js"></script>
+    <!-- endbower -->
+    <!-- endbuild -->
+
+    <script src="sff/framework.js"></script>
+
+    <!-- build:js({.tmp,src}) scripts/app.js -->
+    <!-- inject:js -->
+    <script src="app/index.js"></script>
+    <script src="app/main/main.controller.js"></script>
+    <!-- endinject -->
+
+    <!-- inject:partials -->
+    <!-- angular templates will be automaticaly converted in js and inserted here -->
+    <!-- endinject -->
+    <!-- endbuild -->
+
+  </body>
+</html>
