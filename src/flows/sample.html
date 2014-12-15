@@ -1,0 +1,49 @@
+<screen-flow>
+  <rest-data-service url="/employees.json" ref-id="employeeDs" load-on-start="true"></rest-data-service>
+  <screen state="ListOfItems" is-initial="true">
+    <div>
+      <datasource ref-id="employeeDs" get-items-on-start="true"></datasource>
+      <h1>Welcome to First state</h1>
+      <button changes-state-to="CreateEmployee">Create new</button>
+      <div>
+        <div ng-repeat="employee in employeeDs.items">
+          <span ng-bind="employee.Id"></span> |
+          <span ng-bind="employee.FirstName"></span> |
+          <span ng-bind="employee.LastName"></span> |
+          <button changes-state-to="EmployeeEditor" change-state-value="{empId: employee.Id}">Edit</button>
+          <button deletes-item="{on: 'employeeDs', id: employee.Id}">Delete</button>
+        </div>
+      </div>
+    </div>
+  </screen>
+  <screen state="EmployeeEditor">
+    <div>
+      <datasource ref-id="employeeDs" item="{Id: $parent.previous.empId}" save="true"></datasource>
+      <h1>Welcome to EmployeeEditor</h1>
+      <span>Editing : {{$parent.previous.empId}}</span>
+      <form novalidate>
+        <label>Imię:</label>
+        <input type="text" ng-model="employeeDs.item.FirstName"/>
+        <label>Nazwisko:</label>
+        <input type="text" ng-model="employeeDs.item.LastName"/>
+        <button saves-item-on="employeeDs" change-state-on-success-to="ListOfItems">Save</button>
+        <button changes-state-to="ListOfItems">Back</button>
+      </form>
+    </div>
+  </screen>
+  <screen state="CreateEmployee">
+    <div>
+      <datasource ref-id="employeeDs" creates-new="{ FirstName: 'Imię', LastName: 'Nazwisko' }"></datasource>
+      <h1>Creating Employee</h1>
+      <form novalidate="novalidate" name="createEmployee">
+        <label>Imię:</label>
+        <input type="text" ng-model="employeeDs.item.FirstName" name="firstName" required="required"/>
+        <validator-message form="createEmployee" field="firstName" error="required">Employee name is required.</validator-message>
+        <label>Nazwisko:</label>
+        <input type="text" ng-model="employeeDs.item.LastName" name="lastName"/>
+        <button creates-item-on="employeeDs" enabled-if-valid-form="createEmployee" change-state-on-success-to="ListOfItems">Create</button>
+        <button changes-state-to="ListOfItems">Back</button>
+      </form>
+    </div>
+  </screen>
+</screen-flow>
