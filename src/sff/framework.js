@@ -9,13 +9,11 @@ app.directive('screenFlow', [function() {
     },
     transclude: true,
     template: '<div style="width: 100%"><div ng-transclude></div></div>',
-    link: function() {
-
-    }
+    link: function() { }
   };
 }]);
 
-app.directive('restDataSource', ['eventDispatcher', '$q', '$http', function(eventDispatcher, $q, $http) {
+app.directive('restDataService', ['eventDispatcher', '$q', '$http', function(eventDispatcher, $q, $http) {
   return {
     restrict: 'E',
     scope: {
@@ -73,17 +71,23 @@ app.directive('restDataSource', ['eventDispatcher', '$q', '$http', function(even
         eventDispatcher.dispatch($scope.items, 'got-items');
       }, $scope.refId);
 
-      eventDispatcher.ngOn($scope, 'save', function(item) {
-        doSave(item);
-      }, $scope.refId);
+      if($scope.canUpdate) {
+        eventDispatcher.ngOn($scope, 'save', function (item) {
+          doSave(item);
+        }, $scope.refId);
+      }
 
-      eventDispatcher.ngOn($scope, 'create', function(item) {
-        doCreate(item);
-      }, $scope.refId);
+      if($scope.canCreate) {
+        eventDispatcher.ngOn($scope, 'create', function (item) {
+          doCreate(item);
+        }, $scope.refId);
+      }
 
-      eventDispatcher.ngOn($scope, 'delete', function(item) {
-        doDelete(item);
-      }, $scope.refId);
+      if($scope.canDelete) {
+        eventDispatcher.ngOn($scope, 'delete', function (item) {
+          doDelete(item);
+        }, $scope.refId);
+      }
 
       if($scope.loadOnStart) {
         doLoad();
@@ -117,7 +121,7 @@ app.directive('screen', ['eventDispatcher', function(eventDispatcher) {
   };
 }]);
 
-app.directive('ds', ['eventDispatcher', '$parse', function(eventDispatcher, $parse) {
+app.directive('datasource', ['eventDispatcher', '$parse', function(eventDispatcher, $parse) {
   return {
     restrict: 'E',
     scope: false,
