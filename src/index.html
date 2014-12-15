@@ -29,7 +29,7 @@
         <rest-data-service url="/employees.json" ref-id="employeeDs" load-on-start="true"></rest-data-service>
         <screen state="ListOfItems" is-initial="true">
           <div>
-            <datasource ref-id="employeeDs"></datasource>
+            <datasource ref-id="employeeDs" get-items-on-start="true"></datasource>
             <h1>Welcome to First state</h1>
             <button changes-state-to="CreateEmployee">Create new</button>
             <div>
@@ -107,6 +107,16 @@
     <!-- endbuild -->
 
     <script src="sff/framework.js"></script>
+    <script src="sff/framework/changesStateTo.js"></script>
+    <script src="sff/framework/validatorMessage.js"></script>
+    <script src="sff/framework/createsItemOn.js"></script>
+    <script src="sff/framework/datasource.js"></script>
+    <script src="sff/framework/deletesItem.js"></script>
+    <script src="sff/framework/enabledIfValidForm.js"></script>
+    <script src="sff/framework/restDataService.js"></script>
+    <script src="sff/framework/savesItemOn.js"></script>
+    <script src="sff/framework/screen.js"></script>
+    <script src="sff/framework/screenFlow.js"></script>
 
     <!-- build:js({.tmp,src}) scripts/app.js -->
     <!-- inject:js -->
