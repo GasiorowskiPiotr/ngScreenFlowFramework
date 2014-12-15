@@ -6,7 +6,7 @@
       <h1>Welcome to First state</h1>
       <button changes-state-to="CreateEmployee">Create new</button>
       <div>
-        <div ng-repeat="employee in employeeDs.items">
+        <div ng-repeat="employee in employeeDs.items | propsFilter:{ FirstName: 'Piotrek' }">
           <span ng-bind="employee.Id"></span> |
           <span ng-bind="employee.FirstName"></span> |
           <span ng-bind="employee.LastName"></span> |
