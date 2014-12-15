@@ -7,16 +7,18 @@ angular.module('ngScreenFlow.framework').directive('screen', ['eventDispatcher',
     },
     priority: 10,
     transclude: true,
-    template: '<div style="width: 100%" ng-if="isActive"><div ng-transclude></div></div>',
+    template: '<div style="width: 100%" ng-if="options.isActive" ng-cloak><div ng-transclude></div></div>',
     link: function($scope) {
-      $scope.isActive = $scope.isInitial;
+      $scope.options = {
+        isActive: $scope.isInitial
+      };
 
       eventDispatcher.ngOn($scope, 'state-changed', function(stateInfo) {
         if(stateInfo.next === $scope.state) {
           $scope.previous = stateInfo.value;
-          $scope.isActive = true;
+          $scope.options.isActive = true;
         } else {
-          $scope.isActive = false;
+          $scope.options.isActive = false;
         }
       });
     }
