@@ -53,7 +53,7 @@
               <input type="text" ng-model="employeeDs.item.FirstName"/>
               <label>Nazwisko:</label>
               <input type="text" ng-model="employeeDs.item.LastName"/>
-              <button saves-item-on="employeeDs">Save</button>
+              <button saves-item-on="employeeDs" change-state-on-success-to="ListOfItems">Save</button>
               <button changes-state-to="ListOfItems">Back</button>
             </form>
           </div>
@@ -68,7 +68,7 @@
               <validator-message form="createEmployee" field="firstName" error="required">Employee name is required.</validator-message>
               <label>Nazwisko:</label>
               <input type="text" ng-model="employeeDs.item.LastName" name="lastName"/>
-              <button creates-item-on="employeeDs" enabled-if-valid-form="createEmployee">Create</button>
+              <button creates-item-on="employeeDs" enabled-if-valid-form="createEmployee" change-state-on-success-to="ListOfItems">Create</button>
               <button changes-state-to="ListOfItems">Back</button>
             </form>
           </div>

@@ -7,7 +7,13 @@ angular.module('ngScreenFlow.framework').directive('savesItemOn', ['eventDispatc
 
       $iElem.click(function() {
         $scope.$apply(function() {
-          eventDispatcher.dispatch(0, 'ref-save', dsRef);
+          var promise = eventDispatcher.dispatch(0, 'ref-save', dsRef);
+          if($iAttrs.changeStateOnSuccessTo) {
+            var nextState = $iAttrs.changeStateOnSuccessTo;
+            promise.then(function() {
+              return eventDispatcher.dispatch({next: nextState}, 'state-changed');
+            });
+          }
         });
       });
     }
