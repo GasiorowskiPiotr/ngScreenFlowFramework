@@ -7,19 +7,13 @@ angular.module('ngScreenFlow.framework').directive('datasource', ['eventDispatch
       var neededDs = iAttrs.refId;
       $scope[neededDs] = { };
 
-      eventDispatcher.ngOn($scope, 'got-items', function(data) {
-        $scope[neededDs].items = data;
-      });
-
       if(iAttrs.getItemsOnStart) {
-        eventDispatcher.dispatch(0, 'get-items', neededDs);
+        eventDispatcher.dispatch({}, 'get-items', neededDs).then(function(data) {
+          $scope[neededDs].items = data;
+        });
       }
 
-      eventDispatcher.ngOn($scope, 'refresh', function(data) {
-        $scope[neededDs].items = data;
-      }, neededDs);
-
-      iAttrs.$observe('item', function(newValue) {
+      iAttrs.$observe('getItem', function(newValue) {
         if(newValue) {
           var filter = $parse(newValue)($scope);
           $scope[neededDs].item = _.findWhere($scope[neededDs].items, filter);

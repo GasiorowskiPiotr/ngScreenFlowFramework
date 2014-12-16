@@ -2,7 +2,7 @@
 
 var gulp = require('gulp');
 
-require('require-dir')('./gulp');
+require('require-dir')('./gulpfiles');
 
 gulp.task('default', ['clean'], function () {
     gulp.start('dist');

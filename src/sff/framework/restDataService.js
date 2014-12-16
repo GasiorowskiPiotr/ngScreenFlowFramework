@@ -6,31 +6,26 @@ angular.module('ngScreenFlow.framework').directive('restDataService', ['eventDis
       refId: '@',
       canCreate: '@?',
       canUpdate: '@?',
-      canDelete: '@?',
-      loadOnStart: '@'
+      canDelete: '@?'
     },
     template: '<div style="display:none"></div>',
     link: function($scope) {
       $scope.items = [];
 
-      var doLoad = function() {
-        var deferred = $q.defer();
+      var doLoad = function(filterObj) {
         //TODO: Build URL
-        $http.get($scope.url).then(function(result) {
-
-          $scope.items = result.data;
-
-          eventDispatcher.dispatch($scope.items, 'refresh', $scope.refId);
-
-          deferred.resolve(result.data);
-        }).catch(function(err) {
-          deferred.reject(err);
+        return $http.get($scope.url).then(function(result) {
+          return result.data;
         });
-
-        return deferred.promise;
       };
 
-      var doSave = function(item) {
+      var doGet = function(id) {
+        return $http.get($scope.url).then(function(result) {
+          return result.data;
+        });
+      };
+
+      var doUpdate = function(item) {
         return $http.put($scope.url + '/' + item.Id, item).then(function() {
           return doLoad();
         });
@@ -48,34 +43,30 @@ angular.module('ngScreenFlow.framework').directive('restDataService', ['eventDis
         });
       };
 
-      eventDispatcher.ngOn($scope, 'load-data', function() {
-        return doLoad();
+      eventDispatcher.ngOn($scope, 'get-items', function(filterObj) {
+        return doLoad(filterObj);
       }, $scope.refId);
 
-      eventDispatcher.ngOn($scope, 'get-items', function() {
-        eventDispatcher.dispatch($scope.items, 'got-items');
+      eventDispatcher.ngOn($scope, 'get-item', function(id) {
+        return doGet(id);
       }, $scope.refId);
 
       if($scope.canUpdate) {
         eventDispatcher.ngOn($scope, 'save', function (item) {
-          return doSave(item);
+          doUpdate(item);
         }, $scope.refId);
       }
 
       if($scope.canCreate) {
         eventDispatcher.ngOn($scope, 'create', function (item) {
-          return doCreate(item);
+          doCreate(item);
         }, $scope.refId);
       }
 
       if($scope.canDelete) {
         eventDispatcher.ngOn($scope, 'delete', function (item) {
-          return doDelete(item);
+          doDelete(item);
         }, $scope.refId);
-      }
-
-      if($scope.loadOnStart) {
-        doLoad();
       }
     }
   };

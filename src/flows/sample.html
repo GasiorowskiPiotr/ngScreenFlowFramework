@@ -1,5 +1,5 @@
 <screen-flow>
-  <rest-data-service url="/employees.json" ref-id="employeeDs" load-on-start="true" can-create="true" can-delete="true" can-update="true"></rest-data-service>
+  <rest-data-service url="/employees.json" ref-id="employeeDs"></rest-data-service>
   <screen state="ListOfItems" is-initial="true">
     <div>
       <datasource ref-id="employeeDs" get-items-on-start="true"></datasource>
@@ -18,7 +18,7 @@
   </screen>
   <screen state="EmployeeEditor">
     <div>
-      <datasource ref-id="employeeDs" item="{Id: $parent.previous.empId}" save="true"></datasource>
+      <datasource ref-id="employeeDs" get-item="{Id: $parent.previous.empId}" save="true"></datasource>
       <h1>Welcome to EmployeeEditor</h1>
       <span>Editing : {{$parent.previous.empId}}</span>
       <form novalidate>
