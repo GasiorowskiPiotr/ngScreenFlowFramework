@@ -58,19 +58,19 @@ angular.module('ngScreenFlow.framework').directive('restDataService', ['eventDis
 
       if($scope.canUpdate) {
         eventDispatcher.ngOn($scope, 'save', function (item) {
-          doSave(item);
+          return doSave(item);
         }, $scope.refId);
       }
 
       if($scope.canCreate) {
         eventDispatcher.ngOn($scope, 'create', function (item) {
-          doCreate(item);
+          return doCreate(item);
         }, $scope.refId);
       }
 
       if($scope.canDelete) {
         eventDispatcher.ngOn($scope, 'delete', function (item) {
-          doDelete(item);
+          return doDelete(item);
         }, $scope.refId);
       }
 

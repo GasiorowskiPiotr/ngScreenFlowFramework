@@ -30,7 +30,7 @@ angular.module('ngScreenFlow.framework').directive('datasource', ['eventDispatch
       iAttrs.$observe('save', function(newValue) {
         if(newValue) {
           saveRef = eventDispatcher.on('ref-save', function() {
-            eventDispatcher.dispatch($scope[neededDs].item, 'save', neededDs);
+            return eventDispatcher.dispatch($scope[neededDs].item, 'save', neededDs);
           }, neededDs);
         } else {
           if(saveRef) {
@@ -49,7 +49,7 @@ angular.module('ngScreenFlow.framework').directive('datasource', ['eventDispatch
           }
 
           createRef = eventDispatcher.on('ref-create', function() {
-            eventDispatcher.dispatch($scope[neededDs].item, 'create', neededDs);
+            return eventDispatcher.dispatch($scope[neededDs].item, 'create', neededDs);
           }, neededDs);
 
         } else {

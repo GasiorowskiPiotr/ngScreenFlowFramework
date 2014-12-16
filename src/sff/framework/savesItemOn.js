@@ -12,6 +12,9 @@ angular.module('ngScreenFlow.framework').directive('savesItemOn', ['eventDispatc
             var nextState = $iAttrs.changeStateOnSuccessTo;
             promise.then(function() {
               return eventDispatcher.dispatch({next: nextState}, 'state-changed');
+            }).catch(function(err) {
+              console.log("ERROR!!!");
+              console.log(err);
             });
           }
         });
