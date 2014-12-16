@@ -1,5 +1,5 @@
 <screen-flow>
-  <rest-data-service url="/employees.json" ref-id="employeeDs"></rest-data-service>
+  <rest-data-service url="/employees.json" ref-id="employeeDs" can-create="true" can-update="true" can-delete="true"></rest-data-service>
   <screen state="ListOfItems" is-initial="true">
     <div>
       <datasource ref-id="employeeDs" get-items-on-start="true"></datasource>

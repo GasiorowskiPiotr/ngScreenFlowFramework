@@ -9,7 +9,7 @@ angular.module('ngScreenFlow.framework').directive('datasource', ['eventDispatch
 
       if(iAttrs.getItemsOnStart) {
         eventDispatcher.dispatch({}, 'get-items', neededDs).then(function(data) {
-          $scope[neededDs].items = data;
+          $scope[neededDs].items = data[0];
         });
       }
 

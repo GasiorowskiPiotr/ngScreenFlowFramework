@@ -1,8 +1,10 @@
-angular.module('ngScreenFlow.framework').directive('restDataService', ['eventDispatcher', '$q', '$http', function(eventDispatcher, $q, $http) {
+angular.module('ngScreenFlow.framework').directive('breezeDataService', ['eventDispatcher', function(eventDispatcher) {
   return {
     restrict: 'E',
     scope: {
       url: '@',
+      apiPrefix: '@',
+      entity: '@',
       refId: '@',
       canCreate: '@?',
       canUpdate: '@?',
@@ -10,37 +12,52 @@ angular.module('ngScreenFlow.framework').directive('restDataService', ['eventDis
     },
     template: '<div style="display:none"></div>',
     link: function($scope) {
-      $scope.items = [];
+
+      var manager = new breeze.EntityManager($scope.apiPrefix);
 
       var doLoad = function(filterObj) {
-        //TODO: Build URL
-        return $http.get($scope.url + "/" + filterObj.toRestQueryString()).then(function(result) {
-          return result.data;
-        });
+        var query = new breeze.EntityQuery().from($scope.entity);
+
+        var predicates = filterObj.toBreezeWhere();
+        if(predicates) {
+          query = query.where(predicates);
+        }
+
+        var orderBy = filterObj.toBreezeOrderBy();
+        if(orderBy) {
+          query = query.orderby(orderBy);
+        }
+
+        var take = filterObj.take;
+        if(take === 0) {
+          take = 20;
+        }
+
+        query = query.take(take);
+
+        var skip = filterObj.skip;
+        query = query.skip(skip);
+
+        return manager.executeQuery(query)
       };
 
       var doGet = function(id) {
-        return $http.get($scope.url).then(function(result) {
-          return result.data;
-        });
+        return manager.fetchEntityByKey($scope.entity, id);
       };
 
       var doUpdate = function(item) {
-        return $http.put($scope.url + '/' + item.Id, item).then(function() {
-          return doLoad();
-        });
+        manager.saveChanges();
       };
 
       var doCreate = function(item) {
-        return $http.post($scope.url, item).then(function() {
-          return doLoad();
-        });
+        var entity = manager.createEntity($scope.entity, item);
+        manager.addEntity(entity);
+        manager.saveChanges();
       };
 
       var doDelete = function(item) {
-        return $http.delete($scope.url + '/' + item.Id, item).then(function(){
-          return doLoad();
-        });
+        item.entityAspect.setDeleted();
+        manager.saveChanges();
       };
 
       eventDispatcher.ngOn($scope, 'get-items', function(filterObj) {
@@ -71,4 +88,5 @@ angular.module('ngScreenFlow.framework').directive('restDataService', ['eventDis
     }
   };
 }]);
+
 
