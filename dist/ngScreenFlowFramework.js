@@ -2,6 +2,99 @@
 
 var app = angular.module('ngScreenFlow.framework', ['evilduck.eventDispatcher']);
 
+angular.module('ngScreenFlow.framework').directive('breezeDataService', ['eventDispatcher', function(eventDispatcher) {
+  return {
+    restrict: 'E',
+    scope: {
+      url: '@',
+      apiPrefix: '@',
+      entity: '@',
+      refId: '@',
+      canCreate: '@?',
+      canUpdate: '@?',
+      canDelete: '@?'
+    },
+    template: '<div style="display:none"></div>',
+    link: function($scope) {
+
+      var manager = new breeze.EntityManager($scope.apiPrefix);
+
+      var doLoad = function(filterObj) {
+        var query = new breeze.EntityQuery().from($scope.entity);
+
+        var predicates = filterObj.toBreezeWhere();
+        if(predicates) {
+          query = query.where(predicates);
+        }
+
+        var orderBy = filterObj.toBreezeOrderBy();
+        if(orderBy) {
+          query = query.orderby(orderBy);
+        }
+
+        var take = filterObj.take;
+        if(take === 0) {
+          take = 20;
+        }
+
+        query = query.take(take);
+
+        var skip = filterObj.skip;
+        query = query.skip(skip);
+
+        return manager.executeQuery(query)
+      };
+
+      var doGet = function(id) {
+        return manager.fetchEntityByKey($scope.entity, id);
+      };
+
+      var doUpdate = function(item) {
+        manager.saveChanges();
+      };
+
+      var doCreate = function(item) {
+        var entity = manager.createEntity($scope.entity, item);
+        manager.addEntity(entity);
+        manager.saveChanges();
+      };
+
+      var doDelete = function(item) {
+        item.entityAspect.setDeleted();
+        manager.saveChanges();
+      };
+
+      eventDispatcher.ngOn($scope, 'get-items', function(filterObj) {
+        return doLoad(filterObj);
+      }, $scope.refId);
+
+      eventDispatcher.ngOn($scope, 'get-item', function(id) {
+        return doGet(id);
+      }, $scope.refId);
+
+      if($scope.canUpdate) {
+        eventDispatcher.ngOn($scope, 'save', function (item) {
+          return doUpdate(item);
+        }, $scope.refId);
+      }
+
+      if($scope.canCreate) {
+        eventDispatcher.ngOn($scope, 'create', function (item) {
+          return doCreate(item);
+        }, $scope.refId);
+      }
+
+      if($scope.canDelete) {
+        eventDispatcher.ngOn($scope, 'delete', function (item) {
+          return doDelete(item);
+        }, $scope.refId);
+      }
+    }
+  };
+}]);
+
+
+
 angular.module('ngScreenFlow.framework').directive('changesStateTo', ['eventDispatcher', '$parse', function(eventDispatcher, $parse) {
   return {
     restrict: 'A',
@@ -54,19 +147,13 @@ angular.module('ngScreenFlow.framework').directive('datasource', ['eventDispatch
       var neededDs = iAttrs.refId;
       $scope[neededDs] = { };
 
-      eventDispatcher.ngOn($scope, 'got-items', function(data) {
-        $scope[neededDs].items = data;
-      });
-
       if(iAttrs.getItemsOnStart) {
-        eventDispatcher.dispatch(0, 'get-items', neededDs);
+        eventDispatcher.dispatch({}, 'get-items', neededDs).then(function(data) {
+          $scope[neededDs].items = data[0];
+        });
       }
 
-      eventDispatcher.ngOn($scope, 'refresh', function(data) {
-        $scope[neededDs].items = data;
-      }, neededDs);
-
-      iAttrs.$observe('item', function(newValue) {
+      iAttrs.$observe('getItem', function(newValue) {
         if(newValue) {
           var filter = $parse(newValue)($scope);
           $scope[neededDs].item = _.findWhere($scope[neededDs].items, filter);
@@ -180,31 +267,26 @@ angular.module('ngScreenFlow.framework').directive('restDataService', ['eventDis
       refId: '@',
       canCreate: '@?',
       canUpdate: '@?',
-      canDelete: '@?',
-      loadOnStart: '@'
+      canDelete: '@?'
     },
     template: '<div style="display:none"></div>',
     link: function($scope) {
       $scope.items = [];
 
-      var doLoad = function() {
-        var deferred = $q.defer();
+      var doLoad = function(filterObj) {
         //TODO: Build URL
-        $http.get($scope.url).then(function(result) {
-
-          $scope.items = result.data;
-
-          eventDispatcher.dispatch($scope.items, 'refresh', $scope.refId);
-
-          deferred.resolve(result.data);
-        }).catch(function(err) {
-          deferred.reject(err);
+        return $http.get($scope.url + "/" + filterObj.toRestQueryString()).then(function(result) {
+          return result.data;
         });
-
-        return deferred.promise;
       };
 
-      var doSave = function(item) {
+      var doGet = function(id) {
+        return $http.get($scope.url).then(function(result) {
+          return result.data;
+        });
+      };
+
+      var doUpdate = function(item) {
         return $http.put($scope.url + '/' + item.Id, item).then(function() {
           return doLoad();
         });
@@ -222,17 +304,17 @@ angular.module('ngScreenFlow.framework').directive('restDataService', ['eventDis
         });
       };
 
-      eventDispatcher.ngOn($scope, 'load-data', function() {
-        return doLoad();
+      eventDispatcher.ngOn($scope, 'get-items', function(filterObj) {
+        return doLoad(filterObj);
       }, $scope.refId);
 
-      eventDispatcher.ngOn($scope, 'get-items', function() {
-        eventDispatcher.dispatch($scope.items, 'got-items');
+      eventDispatcher.ngOn($scope, 'get-item', function(id) {
+        return doGet(id);
       }, $scope.refId);
 
       if($scope.canUpdate) {
         eventDispatcher.ngOn($scope, 'save', function (item) {
-          return doSave(item);
+          return doUpdate(item);
         }, $scope.refId);
       }
 
@@ -246,10 +328,6 @@ angular.module('ngScreenFlow.framework').directive('restDataService', ['eventDis
         eventDispatcher.ngOn($scope, 'delete', function (item) {
           return doDelete(item);
         }, $scope.refId);
-      }
-
-      if($scope.loadOnStart) {
-        doLoad();
       }
     }
   };
@@ -352,7 +430,93 @@ var evilduck;
 
   })();
 
+  var DataFilter = (function() {
+    function DataFilter(filters, orderby, take, skip) {
+      this.filters = filters || new Array();
+      this.orderby = orderby || new Array();
+      this.top = take;
+      this.skip = skip;
+    }
+
+    DataFilter.prototype.toRestQueryString = function() {
+
+      var qs = "";
+
+      if(this.filters.length > 1) {
+        console.warn('Filters with length greater than 1 are not supported.');
+      } else if(this.filters.length == 1) {
+        var field = this.filters[0].property;
+        var oper = this.filters[0].operator;
+        var value = this.filters[0].value;
+
+        qs = "filterField=" + field + "&filterOper=" + oper + "&filterValue=" + value;
+      }
+
+      if(this.orderBy.length > 1) {
+        console.warn('Filters with length greater than 1 are not supported.');
+      } else if(this.orderBy.length == 1) {
+        var field = this.orderby[0].property;
+        var dir = this.orderby[0].direction;
+
+        if(qs.length > 0) {
+          qs = qs + '&';
+        }
+
+        qs = "orderField=" + field + "&orderDir=" + dir;
+      }
+
+      if(this.take > 0) {
+        if(qs.length > 0) {
+          qs = qs + '&';
+        }
+
+        qs = "take=" + this.take;
+      }
+
+      if(this.skip > 0) {
+        if(qs.length > 0) {
+          qs = qs + '&';
+        }
+
+        qs = "skip=" + this.skip;
+      }
+
+      return qs;
+    };
+
+    DataFilter.prototype.toBreezeWhere = function() {
+
+      var Predicate = breeze.Predicate;
+
+      var map = _.map(this.filters, function(f) {
+        var prop = f.property;
+        var oper = f.operator;
+        var val = f.value;
+
+        return Predicate.create(prop, oper, val);
+      });
+
+      return _.reduce(_.rest(map), function(f, p) {
+        return f.and(p);
+      }, _.first(map));
+    };
+
+    DataFilter.prototype.toBreezeOrderBy = function() {
+      return _.reduce(this.orderby, function(acc, o) {
+        var property = o.property;
+        var direction = o.direction;
+
+        if(acc.length !== 0) {
+          acc = acc + ","
+        }
+        return acc + property + " " + direction;
+      }, "");
+    };
+
+  })();
+
   ns.ScreenFlowDefinition = ScreenFlowDefinition;
+  ns.DataFilter = DataFilter;
 
 })(evilduck || (evilduck = {}));
 
