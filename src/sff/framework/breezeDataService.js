@@ -13,32 +13,39 @@ angular.module('ngScreenFlow.framework').directive('breezeDataService', ['eventD
     template: '<div style="display:none"></div>',
     link: function($scope) {
 
-      var manager = new breeze.EntityManager($scope.apiPrefix);
+      var manager = new breeze.EntityManager($scope.url + "" + $scope.apiPrefix);
 
       var doLoad = function(filterObj) {
         var query = new breeze.EntityQuery().from($scope.entity);
 
-        var predicates = filterObj.toBreezeWhere();
-        if(predicates) {
-          query = query.where(predicates);
+        if (filterObj.toBreezeWhere) {
+          var predicates = filterObj.toBreezeWhere();
+          if (predicates) {
+            query = query.where(predicates);
+          }
         }
 
-        var orderBy = filterObj.toBreezeOrderBy();
-        if(orderBy) {
-          query = query.orderby(orderBy);
+        if (filterObj.toBreezeOrderBy) {
+          var orderBy = filterObj.toBreezeOrderBy();
+          if (orderBy) {
+            query = query.orderby(orderBy);
+          }
         }
-
+        
         var take = filterObj.take;
-        if(take === 0) {
+        if(!take) {
           take = 20;
         }
 
         query = query.take(take);
 
         var skip = filterObj.skip;
+        if (!skip) {
+          skip = 0;
+        }
         query = query.skip(skip);
 
-        return manager.executeQuery(query)
+        return manager.executeQuery(query);
       };
 
       var doGet = function(id) {
