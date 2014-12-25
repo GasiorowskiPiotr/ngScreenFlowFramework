@@ -89,6 +89,11 @@ angular.module('ngScreenFlow.framework').directive('breezeDataService', ['eventD
         eventDispatcher.ngOn($scope, 'create', function (item) {
           return doCreate(item);
         }, $scope.refId);
+
+        eventDispatcher.ngOn($scope, 'init-item', function(entityType) {
+          return manager.createEntity(entityType);
+        });
+
       }
 
       if($scope.canDelete) {
@@ -183,10 +188,13 @@ angular.module('ngScreenFlow.framework').directive('datasource', ['eventDispatch
       var createRef;
       iAttrs.$observe('createsNew', function(newValue) {
         if(newValue) {
-          if(newValue === true || newValue === 'true') {
-            $scope[neededDs].item = { };
+          var createsNew = $scope[neededDs].item = $parse(newValue)($scope);
+          if(createsNew.entity) {
+            $scope[neededDs].item = eventDispatcher.dispatch(createsNew.entity, 'init-item', neededDs).then(function(item) {
+              $scope[neededDs].item = item;
+            });
           } else {
-            $scope[neededDs].item = $parse(newValue)($scope);
+            $scope[neededDs].item = createsNew || { };
           }
 
           createRef = eventDispatcher.on('ref-create', function() {
@@ -329,6 +337,10 @@ angular.module('ngScreenFlow.framework').directive('restDataService', ['eventDis
         eventDispatcher.ngOn($scope, 'create', function (item) {
           return doCreate(item);
         }, $scope.refId);
+
+        eventDispatcher.ngOn($scope, 'init-item', function() {
+          return { };
+        });
       }
 
       if($scope.canDelete) {
