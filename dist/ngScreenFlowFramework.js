@@ -9,6 +9,7 @@ angular.module('ngScreenFlow.framework').directive('breezeDataService', ['eventD
       url: '@',
       apiPrefix: '@',
       entity: '@',
+      entities: '@',
       refId: '@',
       canCreate: '@?',
       canUpdate: '@?',
@@ -20,7 +21,7 @@ angular.module('ngScreenFlow.framework').directive('breezeDataService', ['eventD
       var manager = new breeze.EntityManager($scope.url + "" + $scope.apiPrefix);
 
       var doLoad = function(filterObj) {
-        var query = new breeze.EntityQuery().from($scope.entity);
+        var query = new breeze.EntityQuery().from($scope.entities);
 
         if (filterObj.toBreezeWhere) {
           var predicates = filterObj.toBreezeWhere();
@@ -35,7 +36,7 @@ angular.module('ngScreenFlow.framework').directive('breezeDataService', ['eventD
             query = query.orderby(orderBy);
           }
         }
-        
+
         var take = filterObj.take;
         if(!take) {
           take = 20;
@@ -53,7 +54,7 @@ angular.module('ngScreenFlow.framework').directive('breezeDataService', ['eventD
       };
 
       var doGet = function(id) {
-        return manager.fetchEntityByKey($scope.entity, id);
+        return manager.fetchEntityByKey($scope.entities, id);
       };
 
       var doUpdate = function(item) {
