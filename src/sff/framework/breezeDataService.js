@@ -85,6 +85,11 @@ angular.module('ngScreenFlow.framework').directive('breezeDataService', ['eventD
         eventDispatcher.ngOn($scope, 'create', function (item) {
           return doCreate(item);
         }, $scope.refId);
+
+        eventDispatcher.ngOn($scope, 'init-item', function(entityType) {
+          return manager.createEntity(entityType);
+        });
+
       }
 
       if($scope.canDelete) {

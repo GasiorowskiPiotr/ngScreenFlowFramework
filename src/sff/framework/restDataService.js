@@ -61,6 +61,10 @@ angular.module('ngScreenFlow.framework').directive('restDataService', ['eventDis
         eventDispatcher.ngOn($scope, 'create', function (item) {
           return doCreate(item);
         }, $scope.refId);
+
+        eventDispatcher.ngOn($scope, 'init-item', function() {
+          return { };
+        });
       }
 
       if($scope.canDelete) {
