@@ -3,7 +3,8 @@ angular.module('ngScreenFlow.framework').directive('validatorMessage', function(
     restrict: 'E',
     scope: false,
     transclude: true,
-    template: "<div ng-transclude></div>",
+    replace: true,
+    template: '<small class="error" ng-transclude></small>',
     link: function($scope, iElem, iAttrs) {
       var formName = iAttrs.form;
       var fieldName = iAttrs.field;

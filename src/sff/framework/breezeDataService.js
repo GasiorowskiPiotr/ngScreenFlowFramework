@@ -44,28 +44,30 @@ angular.module('ngScreenFlow.framework').directive('breezeDataService', ['eventD
         if (!skip) {
           skip = 0;
         }
-        query = query.skip(skip);
+        query = query.skip(skip).inlineCount();
 
         return manager.executeQuery(query);
       };
 
       var doGet = function(id) {
-        return manager.fetchEntityByKey($scope.entities, id);
+        return manager.fetchEntityByKey($scope.entity, id);
       };
 
       var doUpdate = function(item) {
-        manager.saveChanges();
+        return manager.saveChanges();
       };
 
       var doCreate = function(item) {
         var entity = manager.createEntity($scope.entity, item);
         manager.addEntity(entity);
-        manager.saveChanges();
+        return manager.saveChanges();
       };
 
-      var doDelete = function(item) {
-        item.entityAspect.setDeleted();
-        manager.saveChanges();
+      var doDelete = function (id) {
+        return doGet(id).then(function(data) {
+          data.entity.entityAspect.setDeleted();
+          return manager.saveChanges();
+        });
       };
 
       eventDispatcher.ngOn($scope, 'get-items', function(filterObj) {

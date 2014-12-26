@@ -11,7 +11,7 @@ angular.module('ngScreenFlow.framework').directive('deletesItem', ['eventDispatc
         $scope.$apply(function() {
           var promise = eventDispatcher.dispatch(itemId, 'delete', dsRef);
 
-          if($iAttrs.changeStateOnSuccessTo) {
+          if($iAttr.changeStateOnSuccessTo) {
             var nextState = $iAttrs.changeStateOnSuccessTo;
             promise.then(function() {
               return eventDispatcher.dispatch({next: nextState}, 'state-changed');
