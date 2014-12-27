@@ -7,6 +7,20 @@ angular.module('ngScreenFlow.framework').directive('datasource', ['eventDispatch
       var neededDs = iAttrs.refId;
       $scope[neededDs] = { };
 
+      eventDispatcher.ngOn($scope, 'reload', function() {
+        eventDispatcher.dispatch({}, 'get-items', neededDs).then(function(data) {
+          $scope[neededDs].items = data[0].results;
+        });
+
+        if(iAttrs.getItem) {
+          var filter = $parse(iAttrs.getItem)($scope);
+          var id = filter.Id;
+          eventDispatcher.dispatch(id, 'get-item', neededDs).then(function(data) {
+            $scope[neededDs].item = data[0].entity;
+          });
+        }
+      }, neededDs);
+
       if(iAttrs.getItemsOnStart) {
         eventDispatcher.dispatch({}, 'get-items', neededDs).then(function(data) {
           $scope[neededDs].items = data[0].results;

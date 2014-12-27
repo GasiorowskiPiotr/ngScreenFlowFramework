@@ -162,6 +162,20 @@ angular.module('ngScreenFlow.framework').directive('datasource', ['eventDispatch
       var neededDs = iAttrs.refId;
       $scope[neededDs] = { };
 
+      eventDispatcher.ngOn($scope, 'reload', function() {
+        eventDispatcher.dispatch({}, 'get-items', neededDs).then(function(data) {
+          $scope[neededDs].items = data[0].results;
+        });
+
+        if(iAttrs.getItem) {
+          var filter = $parse(iAttrs.getItem)($scope);
+          var id = filter.Id;
+          eventDispatcher.dispatch(id, 'get-item', neededDs).then(function(data) {
+            $scope[neededDs].item = data[0].entity;
+          });
+        }
+      }, neededDs);
+
       if(iAttrs.getItemsOnStart) {
         eventDispatcher.dispatch({}, 'get-items', neededDs).then(function(data) {
           $scope[neededDs].items = data[0].results;
@@ -279,6 +293,21 @@ angular.module('ngScreenFlow.framework').filter('propsFilter', function() {
     return _.where(items, obj);
   };
 })
+
+angular.module('ngScreenFlow.framework').directive('reload', ['eventDispatcher', function(eventDispatcher){
+  return {
+    restrict: 'A',
+    scope: false,
+    link: function($scope, $iElem, $iAttr) {
+      var neededDs = $iAttr.reload;
+      $iElem.click(function(){
+        $scope.$apply(function() {
+          eventDispatcher.dispatch(0, 'reload', neededDs);
+        });
+      });
+    }
+  }
+}]);
 
 angular.module('ngScreenFlow.framework').directive('restDataService', ['eventDispatcher', '$q', '$http', function(eventDispatcher, $q, $http) {
   return {
