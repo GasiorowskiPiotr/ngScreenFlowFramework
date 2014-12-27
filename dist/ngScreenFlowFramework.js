@@ -164,14 +164,17 @@ angular.module('ngScreenFlow.framework').directive('datasource', ['eventDispatch
 
       if(iAttrs.getItemsOnStart) {
         eventDispatcher.dispatch({}, 'get-items', neededDs).then(function(data) {
-          $scope[neededDs].items = data[0];
+          $scope[neededDs].items = data[0].results;
         });
       }
 
       iAttrs.$observe('getItem', function(newValue) {
         if(newValue) {
           var filter = $parse(newValue)($scope);
-          $scope[neededDs].item = _.findWhere($scope[neededDs].items, filter);
+          var id = filter.Id;
+          eventDispatcher.dispatch(id, 'get-item', neededDs).then(function(data) {
+            $scope[neededDs].item = data[0].entity;
+          });
         }
       });
 
